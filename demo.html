@@ -1,0 +1,32 @@
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script>
+    $(function() {
+      $("#getData").click(function() {
+        console.log("clicked");
+        $.ajax({
+          url: 'http://127.0.0.1:5000/',
+          success: function(data) {
+            console.log("ok");
+            var output = '';
+            for (var i = 0; i < data['users'].length; i++)
+              output += data['users'][i]['id'] + ' ' + data['users'][i]['name'] + '<br />';
+            $('#result').html(output);
+          },
+          error: function() {
+            console.log("error");
+          }
+        });
+      })
+    })
+  </script>
+</head>
+<body>
+  <div id="query">
+    <input type="button" id="getData" value="Get Data" />
+  </div>
+  <div id="result">
+  </div>
+</body>
+</html>
