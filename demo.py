@@ -10,6 +10,7 @@ Part of the SQLAlchemy documentation: http://docs.sqlalchemy.org/en/latest/core/
 from flask import Flask, jsonify, make_response, request
 import json
 from sqlalchemy import create_engine
+from sqlalchemy import Table, Column, Integer, String, MetaData
 from sqlalchemy.sql import text
 
 app = Flask(__name__)
@@ -17,15 +18,27 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
 
-    # Connect to the database. You'll need to change the connection string.
-    engine = create_engine('postgresql://someuser:somepassword@localhost/somedatabasename', echo=True)
+    # Connect to the database and create some test data.
+    metadata = MetaData()
+    users = Table('users', metadata,
+        Column('id', Integer, primary_key=True),
+        Column('name', String),
+        Column('fullname', String),
+    )
+    engine = create_engine('sqlite:///:memory:', echo=True)
     conn = engine.connect()
+    metadata.create_all(engine)
+    ins = users.insert().values(name='jack', fullname='Jack Jones')
+    result = conn.execute(ins)
+    ins = users.insert().values(name='joe', fullname='Joe Schmo')
+    result = conn.execute(ins)
 
-    # Query the database. You'll need to change the query.
-    # Format the results as a JSON dictionary.
-    records = conn.execute('select id, name from public.user where id < 10').fetchall()
+    # Query the database. Format the results as a JSON dictionary.
+    records = conn.execute('select id, name from users').fetchall()
+    print 'records =', records
     results = {'users': []}
     for record in records:
+        print 'record =', record
         results['users'].append({'id': record.id, 'name': record.name})
 
     # Return a JSON response. Use a header (CORS) to allow access from a
